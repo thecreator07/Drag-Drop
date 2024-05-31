@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
+import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -18,7 +18,7 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 camera.position.set(5, 30, 50);
-const Control = new OrbitControls(camera, renderer.domElement);
+// const Control = new OrbitControls(camera, renderer.domElement);
 
 
 //Creating a room
@@ -54,6 +54,8 @@ wallBack.position.set(0, roomSize / 2, -roomSize / 2);
 scene.add(wallBack);
 
 // creating random objects
+const objects = []
+
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -84,13 +86,13 @@ function placeObject(object, objectCount) {
       }
     }
   }
-window.addEventListener('mousemove',(e)=>{
+  window.addEventListener('mousemove', (e) => {
     console.log(scene.children)
-})
-  //   console.log(scene.children);
+  })
 
   if (placed) {
     scene.add(object);
+    objects.push(object)
   } else {
     console.warn("Failed to place object after", attempts, "attempts");
   }
@@ -101,14 +103,30 @@ for (let index = 0; index < ObjectNum; index++) {
   const geo = new THREE.SphereGeometry(2);
   const mat = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
   const mesh = new THREE.Mesh(geo, mat);
+
   placeObject(mesh, ObjectNum);
 }
 
+//Drag and Drop
+const dragControls = new DragControls(objects, camera, renderer.domElement)
+let startColor
+dragControls.addEventListener("dragstart", (e) => {
+  startColor = e.object.material.color.getHex()
+  e.object.material.color.setHex(0x000000)
+})
+dragControls.addEventListener("dragend", (e) => {
+  e.object.material.color.setHex(startColor)
+})
+
+
+
+//Animation loop
 const animate = () => {
- 
+
+
   renderer.render(scene, camera);
 
-  Control.update();
+  // Control.update();
 };
 
 document.addEventListener("resize", () => {
